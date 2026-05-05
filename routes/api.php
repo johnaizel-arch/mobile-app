@@ -52,7 +52,7 @@ Route::post('/transactions', function (Request $request) {
         'message' => 'Transaction recorded',
         'transaction' => $transaction
     ], 201);
-    
+
     Route::patch('/transactions/{id}', function (Request $request, $id) {
     $transaction = \App\Models\Transaction::findOrFail($id);
     $transaction->update(['status' => $request->status]);
@@ -88,4 +88,26 @@ Route::get('/cash-flow', function () {
         // Show the 10 most recent approved movements in the Ledger
         'transactions' => Transaction::where('status', 'approved')->latest()->take(10)->get()
     ]);
+    
+    Route::get('/hr-data', function () {
+    return response()->json([
+        'employees' => DB::table('users')->get()->map(function($user) {
+            // ✅ Generate initials from name (e.g., "John Doe" -> "JD")
+            $words = explode(' ', $user->name);
+            $initials = (count($words) > 1) 
+                ? strtoupper(substr($words[0], 0, 1) . substr(end($words), 0, 1))
+                : strtoupper(substr($user->name, 0, 2));
+
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'role' => $user->role ?? 'Staff',
+                'department' => 'Operations', 
+                'status' => 'active', // ✅ Default to 'active' so they show in "Active" count
+                'avatar' => $initials  // ✅ Sent to React for the circle icon
+            ];
+        }),
+        'leaveRequests' => DB::table('leave_requests')->where('status', 'pending')->get()
+    ]);
+});
 });
