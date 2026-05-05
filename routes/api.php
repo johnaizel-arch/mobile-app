@@ -52,6 +52,16 @@ Route::post('/transactions', function (Request $request) {
         'message' => 'Transaction recorded',
         'transaction' => $transaction
     ], 201);
+    
+    Route::patch('/transactions/{id}', function (Request $request, $id) {
+    $transaction = \App\Models\Transaction::findOrFail($id);
+    $transaction->update(['status' => $request->status]);
+
+    return response()->json([
+        'message' => 'Status updated',
+        'transaction' => $transaction
+    ]);
+});
 });
 
 Route::get('/cash-flow', function () {
