@@ -101,7 +101,7 @@ Route::get('/cash-flow', function () {
             return [
                 'id' => $user->id,
                 'name' => $user->name,
-                'role' => $user->role ?? 'Staff',
+                'role' => $user->role ?? 'Employee', // Default to 'Employee' if role is missing
                 'department' => 'Operations', 
                 'status' => 'active', // ✅ Default to 'active' so they show in "Active" count
                 'avatar' => $initials  // ✅ Sent to React for the circle icon
