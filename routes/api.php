@@ -30,3 +30,15 @@ Route::post('/login', function (Request $request) {
         'user' => $user
     ]);
 });
+
+// routes/api.php
+
+Route::get('/cash-flow', function () {
+    // This pulls your available balance and recent activity
+    return response()->json([
+        'stats' => [
+            'cashBalance' => \App\Models\Transaction::sum('amount'), // Example logic
+        ],
+        'transactions' => \App\Models\Transaction::latest()->take(10)->get()
+    ]);
+});
