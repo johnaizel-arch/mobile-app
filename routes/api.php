@@ -43,9 +43,9 @@ Route::post('/transactions', function (Request $request) {
         'title' => $request->title,
         'amount' => $request->amount,
         'type' => $request->type,
-        'status' => $request->status, // For Admin, this is usually 'approved'
-        'date' => now()->format('M d, Y'),
-        'user_id' => 1 // Hardcode to Admin ID since this route is Admin-only
+        'status' => $request->status,
+        'user_id' => $request->user_id,
+        'date' => now()->format('M d, Y')
     ]);
 
     return response()->json([
