@@ -23,7 +23,7 @@ Route::post('/login', function (Request $request) {
             'id' => $user->id, // This is the UID from the database
             'name' => $user->name,
             'email' => $user->email,
-            'role' => $user->email === 'admin@a3ph.com' ? 'admin' : 'employee', // Example role logic
+            'role' => strtolower($user->role),// Example role logic
         ]
     ]);
 });
@@ -57,9 +57,25 @@ Route::post('/transactions', function (Request $request) {
 Route::get('/cash-flow', function () {
     return response()->json([
         'stats' => [
-            // Only sum approved transactions to keep balance accurate
+            // Only sum approved transactions for the main balance
             'cashBalance' => Transaction::where('status', 'approved')->sum('amount'), 
         ],
-        'transactions' => Transaction::latest()->take(10)->get()
+        // ✅ ADD THIS: This feeds the horizontal scroller in the Admin POV
+        'cashAdvances' => Transaction::where('status', 'pending')
+            ->latest()
+            ->get()
+            ->map(function($item) {
+                // Generate initials from the title (e.g., "Advance: Sarah" -> "S")
+                $cleanName = str_replace('Advance: ', '', $item->title);
+                return [
+                    'id' => $item->id,
+                    'employeeName' => $cleanName,
+                    'amount' => $item->amount,
+                    'status' => $item->status,
+                    'initials' => strtoupper(substr($cleanName, 0, 2)) 
+                ];
+            }),
+        // Show the 10 most recent approved movements in the Ledger
+        'transactions' => Transaction::where('status', 'approved')->latest()->take(10)->get()
     ]);
 });
