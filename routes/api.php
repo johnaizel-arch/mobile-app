@@ -13,17 +13,18 @@ Route::post('/login', function (Request $request) {
 
     $user = DB::table('users')->where('email', $request->email)->first();
 
-    if (!$user) {
-        return response()->json(['message' => 'User not found'], 404);
-    }
-
-    if (!Hash::check($request->password, $user->password)) {
-        return response()->json(['message' => 'Invalid password'], 401);
+    if (!$user || !Hash::check($request->password, $user->password)) {
+        return response()->json(['message' => 'Invalid credentials'], 401);
     }
 
     return response()->json([
         'message' => 'Login successful',
-        'user' => $user
+        'user' => [
+            'id' => $user->id, // This is the UID from the database
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->email === 'admin@a3ph.com' ? 'admin' : 'employee', // Example role logic
+        ]
     ]);
 });
 
