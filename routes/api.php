@@ -3,9 +3,9 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use App\Models\Transaction; // Ensure this model exists
 
 Route::post('/login', function (Request $request) {
-
     $request->validate([
         'email' => 'required|email',
         'password' => 'required'
@@ -14,15 +14,11 @@ Route::post('/login', function (Request $request) {
     $user = DB::table('users')->where('email', $request->email)->first();
 
     if (!$user) {
-        return response()->json([
-            'message' => 'User not found'
-        ], 404);
+        return response()->json(['message' => 'User not found'], 404);
     }
 
     if (!Hash::check($request->password, $user->password)) {
-        return response()->json([
-            'message' => 'Invalid password'
-        ], 401);
+        return response()->json(['message' => 'Invalid password'], 401);
     }
 
     return response()->json([
@@ -31,14 +27,37 @@ Route::post('/login', function (Request $request) {
     ]);
 });
 
-// routes/api.php
+// ✅ ADD THIS: Handle Cash Advance Requests from Employees
+Route::post('/transactions', function (Request $request) {
+    $request->validate([
+        'title' => 'required|string',
+        'amount' => 'required|numeric',
+        'type' => 'required|in:in,out',
+        'status' => 'required|string'
+    ]);
+
+    // This saves the request to your Supabase database
+    $transaction = Transaction::create([
+        'title' => $request->title,
+        'amount' => $request->amount,
+        'type' => $request->type,
+        'status' => $request->status, // 'pending' for employee requests
+        'date' => now()->format('M d, Y'),
+        'user_id' => $request->user_id ?? 1 // Link to the employee
+    ]);
+
+    return response()->json([
+        'message' => 'Transaction created successfully',
+        'transaction' => $transaction
+    ], 201);
+});
 
 Route::get('/cash-flow', function () {
-    // This pulls your available balance and recent activity
     return response()->json([
         'stats' => [
-            'cashBalance' => \App\Models\Transaction::sum('amount'), // Example logic
+            // Only sum approved transactions to keep balance accurate
+            'cashBalance' => Transaction::where('status', 'approved')->sum('amount'), 
         ],
-        'transactions' => \App\Models\Transaction::latest()->take(10)->get()
+        'transactions' => Transaction::latest()->take(10)->get()
     ]);
 });
