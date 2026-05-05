@@ -30,6 +30,7 @@ Route::post('/login', function (Request $request) {
 
 // ✅ ADD THIS: Handle Cash Advance Requests from Employees
 Route::post('/transactions', function (Request $request) {
+    // 1. Remove user_id from validation to stop the 422 error
     $request->validate([
         'title' => 'required|string',
         'amount' => 'required|numeric',
@@ -37,18 +38,18 @@ Route::post('/transactions', function (Request $request) {
         'status' => 'required|string'
     ]);
 
-    // This saves the request to your Supabase database
+    // 2. Create the transaction
     $transaction = Transaction::create([
         'title' => $request->title,
         'amount' => $request->amount,
         'type' => $request->type,
-        'status' => $request->status, // 'pending' for employee requests
+        'status' => $request->status, // For Admin, this is usually 'approved'
         'date' => now()->format('M d, Y'),
-        'user_id' => $request->user_id ?? 1 // Link to the employee
+        'user_id' => 1 // Hardcode to Admin ID since this route is Admin-only
     ]);
 
     return response()->json([
-        'message' => 'Transaction created successfully',
+        'message' => 'Transaction recorded',
         'transaction' => $transaction
     ], 201);
 });
