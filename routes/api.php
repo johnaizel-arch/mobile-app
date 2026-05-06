@@ -90,24 +90,23 @@ Route::get('/cash-flow', function () {
     ]);
     
     Route::get('/hr-data', function () {
+    // ✅ FIX: Fetch only users with the 'employee' role as seen in your DB
+    $employees = DB::table('users')
+        ->where('role', 'employee') 
+        ->get();
+    
     return response()->json([
-        'employees' => DB::table('users')->get()->map(function($user) {
-            // ✅ Generate initials from name (e.g., "John Doe" -> "JD")
-            $words = explode(' ', $user->name);
-            $initials = (count($words) > 1) 
-                ? strtoupper(substr($words[0], 0, 1) . substr(end($words), 0, 1))
-                : strtoupper(substr($user->name, 0, 2));
-
+        'employees' => $employees->map(function($user) {
             return [
                 'id' => $user->id,
                 'name' => $user->name,
-                'role' => $user->role ?? 'Employee', // Default to 'Employee' if role is missing
-                'department' => 'Operations', 
-                'status' => 'active', // ✅ Default to 'active' so they show in "Active" count
-                'avatar' => $initials  // ✅ Sent to React for the circle icon
+                'role' => $user->role, // Will be 'employee'
+                'status' => 'active', 
+                'avatar' => strtoupper(substr($user->name, 0, 2)),
+                'department' => 'Operations'
             ];
         }),
-        'leaveRequests' => DB::table('leave_requests')->where('status', 'pending')->get()
+        'leaveRequests' => [] // Add your leave logic here
     ]);
 });
 });
