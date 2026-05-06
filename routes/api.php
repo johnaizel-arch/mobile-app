@@ -64,6 +64,15 @@ Route::post('/transactions', function (Request $request) {
 });
 });
 
+Route::get('/transactions', function (Request $request) {
+
+    $userId = $request->query('user_id');
+
+    return Transaction::where('user_id', $userId)
+        ->latest()
+        ->get();
+});
+
 Route::get('/cash-flow', function () {
     return response()->json([
         'stats' => [
