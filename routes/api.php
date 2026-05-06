@@ -88,9 +88,9 @@ Route::get('/cash-flow', function () {
         // Show the 10 most recent approved movements in the Ledger
         'transactions' => Transaction::where('status', 'approved')->latest()->take(10)->get()
     ]);
-    
-    Route::get('/hr-data', function () {
-    // ✅ FIX: Fetch only users with the 'employee' role as seen in your DB
+});
+
+Route::get('/hr-data', function () {
     $employees = DB::table('users')
         ->where('role', 'employee') 
         ->get();
@@ -100,13 +100,12 @@ Route::get('/cash-flow', function () {
             return [
                 'id' => $user->id,
                 'name' => $user->name,
-                'role' => $user->role, // Will be 'employee'
+                'role' => $user->role,
                 'status' => 'active', 
                 'avatar' => strtoupper(substr($user->name, 0, 2)),
                 'department' => 'Operations'
             ];
         }),
-        'leaveRequests' => [] // Add your leave logic here
+        'leaveRequests' => [] 
     ]);
-});
 });
